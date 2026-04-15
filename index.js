@@ -2,10 +2,22 @@
 import express from 'express';
 import 'dotenv/config'
 
+// import the things from other location.... ex. controllers, routes
+import userRoute from './routes/userRoute.js'
+
+
 // define app
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
+//
+
+// middlewares
+app.use(express.json());
+
+
+// middleware routes
+app.use('/auth', userRoute);
 
 
 // testing route
