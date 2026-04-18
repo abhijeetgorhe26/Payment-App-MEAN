@@ -1,59 +1,141 @@
 import User from '../utils/db.js'
 import generateOtp from '../utils/otpGenerator.js'
 import { sendEmail } from '../utils/mailSender.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 
 // creating temporary array to store value for sometime until
 // get verfied from user throgh otp;
-const tempUser = new Map();
+const tempUsers = new Map();
+console.log("All tempUsers:", tempUsers);
 
 
 
+// verification route
+export const verify = async (req, res) => {
+    try {
+        const { otp, email } = req.body;
+
+
+
+        console.log("Requested email:", email);
+        const tempUser = tempUsers.get(email);
+
+        console.log(tempUser);
+
+        if (!tempUser) {
+            return res.status(400).json({
+                success: false,
+                message: "No OTP request found or user not registered"
+            });
+        }
+
+
+        if (tempUser.otpExpired < Date.now()) {
+            tempUser.delete(email);
+
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired"
+            });
+        }
+
+
+        if (tempUser.otpCodes !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
+        }
+
+        const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING name, email, password';
+
+        const result = await User.query(insertQuery, [tempUser.name, tempUser.email, tempUser.password]);
+
+
+        tempUsers.delete(email);
+
+
+
+
+        res.status(201).json({
+            success: true,
+            message: "User verified & created to DB"
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "OTP verification failed"
+        });
+    }
+
+
+}
 
 
 // registration route
 export const signUp = async (req, res) => {
-
     try {
         const { name, email, password } = req.body;
 
-        if (name == '' || email == '', password == '') {
+
+        if (!name || !email || !password) {
+            console.log("Something has missed...")
             return res.status(400).json({
                 success: false,
-                message: 'Invalid credentials',
-                error
-            });
+                message: "Invalid Credintials",
+            })
         }
 
-        const checkQuery = 'SELECT COUNT(*) FROM users where email = $1';
-        const values = [email];
-        const result = await User.query(checkQuery, values);
-        console.log("Result: ", result.rows[0].count);
+        console.log("Everything is okay....!");
 
-        if (result.rows[0].count > 0) {
+
+        const checkQuery = 'SELECT COUNT(*) FROM users where email = $1';
+        console.log(checkQuery);
+
+        console.log(User.query);
+
+
+        const result = await User.query(checkQuery, [email]);
+
+
+
+
+
+        if (parseInt(result.rows[0].count) > 0) {
             return res.status(400).json({
                 success: false,
                 message: "User already exists",
-                error
             });
         }
+
+
+
 
 
         const otp = generateOtp();
         console.log('otp:', otp);
-        const otpExpire = Date.now() + 30 * 1000;
+        const otpExpire = Date.now() + 5 * 60 * 1000; // 5 minutes
         console.log('otpExpired:', otpExpire);
 
 
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+
+
+
         // Store in tempUser array to get verify from user
-        tempUser.set(email, {
+        tempUsers.set(email, {
             name,
             email,
-            password,
-            otpcodes: otp,
-            otpexpired: otpExpire,
-            created_at: Date.now()
-        })
+            password: hashedPassword,
+            otpCodes: otp,
+            otpExpired: otpExpire,
+        });
 
 
         await sendEmail(email, "OTP Verification", `Your OTP is ${otp}`);
@@ -62,11 +144,14 @@ export const signUp = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Verfication pending....",
-            error
         })
 
     } catch (error) {
-        res.status(502).json({
+
+        console.log(error)
+        res.status(500).json({
+            success: false,
+            message: "Server error",
             error: error.message
         })
     }
@@ -74,5 +159,72 @@ export const signUp = async (req, res) => {
 
 
 export const signIn = async (req, res) => {
-    res.send("Hey from signIp");
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid input..!"
+            })
+        }
+
+
+        const findUser = 'SELECT * FROM users WHERE email = $1';
+        const result = await User.query(findUser, [email]);
+        console.log(result.rowCount);
+
+        if (result.rowCount === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found...!"
+            });
+        }
+
+
+        const user = result.rows[0];
+        console.log(user.password);
+        console.log(password)
+
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid password"
+            });
+        }
+
+        const token = jwt.sign(
+            { email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+
+        res.status(200).json({
+            success: true,
+            message: "Proceed to login....",
+            token
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: error.message
+        })
+    }
 };
+
+
+export const testController = async (req, res) => {
+    try {
+        res.send("Protected this thing.......!")
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong......!"
+        })
+    }
+}
