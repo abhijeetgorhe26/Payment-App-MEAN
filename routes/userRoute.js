@@ -1,4 +1,4 @@
-import { signIn, signUp, verify, testController } from "../controllers/userAuth.js";
+import { signIn, signUp, verify, testController, signOut } from "../controllers/userAuth.js";
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { findUser } from "../controllers/userController.js";
@@ -13,6 +13,8 @@ const router = express.Router();
 router.post('/signup', signUp);
 router.post('/verify', verify);
 router.post('/login', signIn);
+
+router.post('/logout', signOut);
 
 
 

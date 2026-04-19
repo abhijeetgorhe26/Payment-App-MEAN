@@ -5,6 +5,7 @@ import 'dotenv/config'
 // import the things from other location.... ex. controllers, routes
 import userRoute from './routes/userRoute.js';
 import otherRoute from './routes/otherRoute.js';
+import account from './routes/accountRoute.js'
 import { authMiddleware } from './middlewares/authMiddleware.js';
 
 // define app
@@ -19,7 +20,7 @@ app.use(express.json());
 
 // middleware routes
 app.use('/auth', userRoute);
-app.use('/api/v1', otherRoute);
+app.use('/api/v1', otherRoute, account);
 
 
 // testing route
@@ -30,7 +31,6 @@ app.get('/', (req, res) => {
 
 //test route for middlewares
 app.get('/home', authMiddleware, (req, res) => {
-    console.log(req)
     res.send(`Welcome ${req.user.email}`);
 });
 

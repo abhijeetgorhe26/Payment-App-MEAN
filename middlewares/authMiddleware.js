@@ -1,26 +1,33 @@
 import jwt from 'jsonwebtoken';
+import { tokenBlacklist } from '../utils/tokenBlacklist.js';
 
 
 export const authMiddleware = (req, res, next) => {
     try {
+
+        let token;
         const authHeader = req.headers.authorization;
-        console.log(req);
+
 
         // ✅ Check first
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
+        } else if (req.cookies?.token) {
+            token = req.cookies.token;
         }
-
-        // Format: Bearer TOKEN
-        const token = authHeader.split(" ")[1];
 
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid token format"
+                message: "Login required"
+            });
+        }
+
+        // 🚫 Check blacklist
+        if (tokenBlacklist.has(token)) {
+            return res.status(401).json({
+                success: false,
+                message: "Token already logged out"
             });
         }
 

@@ -3,6 +3,7 @@ import generateOtp from '../utils/otpGenerator.js'
 import { sendEmail } from '../utils/mailSender.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { tokenBlacklist } from '../utils/tokenBlacklist.js';
 
 
 // creating temporary array to store value for sometime until
@@ -33,7 +34,7 @@ export const verify = async (req, res) => {
 
 
         if (tempUser.otpExpired < Date.now()) {
-            tempUser.delete(email);
+            tempUsers.delete(email);
 
             return res.status(400).json({
                 success: false,
@@ -217,6 +218,37 @@ export const signIn = async (req, res) => {
     }
 };
 
+
+export const signOut = async (req, res) => {
+    try {
+        let token;
+
+        const authHeader = req.headers.authorization;
+
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            token = authHeader.split(" ")[1];
+        } else if (req.cookies?.token) {
+            token = req.cookies.token;
+        }
+
+        if (token) {
+            tokenBlacklist.add(token); // block this token
+        }
+
+        res.clearCookie("token");
+
+        return res.status(200).json({
+            success: true,
+            message: "Logged out successfully"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Logout failed"
+        });
+    }
+};
 
 export const testController = async (req, res) => {
     try {
