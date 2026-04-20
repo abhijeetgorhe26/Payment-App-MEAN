@@ -1,6 +1,7 @@
 // import lib using npm
 import express from 'express';
-import 'dotenv/config'
+import 'dotenv/config';
+import cors from 'cors';
 
 // import the things from other location.... ex. controllers, routes
 import userRoute from './routes/userRoute.js';
@@ -16,7 +17,10 @@ const port = process.env.PORT || 3000;
 
 // middlewares
 app.use(express.json());
-
+app.use(cors({
+    origin: 'http://localhost:4200', // Angular app
+    credentials: true
+}));
 
 // middleware routes
 app.use('/auth', userRoute);

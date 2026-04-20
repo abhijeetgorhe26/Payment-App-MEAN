@@ -1,0 +1,41 @@
+<div class="app-container">
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <h2>💳 Payments App</h2>
+
+        <div class="user-info">
+            <span>Welcome, {{ userEmail }}</span>
+            <div class="avatar">U</div>
+        </div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+        <p>Your Balance</p>
+        <h1>${{ balance }}</h1>
+    </div>
+
+    <!-- Users Section -->
+    <div class="users-section">
+        <h3>Send Money</h3>
+
+        <input type="text" placeholder="🔍 Search users..." [(ngModel)]="search" class="search-box" />
+
+        <div class="user-list">
+            <div class="user-card" *ngFor="let user of users">
+
+                <div class="user-left">
+                    <div class="avatar">{{ user.name[0] }}</div>
+                    <span>{{ user.name }}</span>
+                </div>
+
+                <button (click)="sendMoney(user.id)">
+                    Send 💸
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+</div>
