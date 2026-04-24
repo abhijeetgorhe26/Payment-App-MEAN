@@ -20,7 +20,8 @@
     <div class="users-section">
         <h3>Send Money</h3>
 
-        <input type="text" placeholder="🔍 Search users..." [(ngModel)]="search" class="search-box" />
+        <input type="text" placeholder="🔍 Search users..." [(ngModel)]="search" (ngModelChange)="onSearchChange()"
+            class="search-box" />
 
         <div class="user-list">
             <div class="user-card" *ngFor="let user of users">

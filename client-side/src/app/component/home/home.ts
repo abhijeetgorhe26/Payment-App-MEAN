@@ -19,7 +19,7 @@ export class Home implements OnInit {
   users: any[] = [];
   search: string = '';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.loadUserFromToken();
@@ -92,14 +92,14 @@ export class Home implements OnInit {
       to: userId,
       amount: Number(amount)
     }, this.getHeaders())
-      .subscribe({
-        next: () => {
-          alert("Transfer successful 💸");
-          this.getBalance(); // refresh balance
-        },
-        error: (err) => {
-          alert(err.error?.message || "Transfer failed");
-        }
-      });
+    .subscribe({
+      next: () => {
+        alert("Transfer successful 💸");
+        this.getBalance(); // refresh balance
+      },
+      error: (err) => {
+        alert(err.error?.message || "Transfer failed");
+      }
+    });
   }
 }

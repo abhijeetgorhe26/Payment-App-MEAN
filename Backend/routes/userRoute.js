@@ -1,4 +1,4 @@
-import { signIn, signUp, verify, testController, signOut } from "../userAuth.js";
+import { signIn, signUp, verify, testController, signOut } from "../controllers/userAuth.js";
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { findUser } from "../controllers/userController.js";

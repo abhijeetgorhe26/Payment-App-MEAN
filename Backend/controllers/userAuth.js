@@ -1,9 +1,9 @@
-import User from './utils/db.js'
-import generateOtp from './utils/otpGenerator.js'
-import { sendEmail } from './utils/mailSender.js';
+import User from '../utils/db.js'
+import generateOtp from '../utils/otpGenerator.js'
+import { sendEmail } from '../utils/mailSender.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { tokenBlacklist } from './utils/tokenBlacklist.js';
+import { tokenBlacklist } from '../utils/tokenBlacklist.js';
 
 
 // creating temporary array to store value for sometime until

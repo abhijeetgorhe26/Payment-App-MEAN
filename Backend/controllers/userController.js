@@ -2,7 +2,7 @@ import User from '../utils/db.js'
 
 export const findUser = async (req, res) => {
     try {
-        const filter = req.query.zx || '';
+        const filter = req.query.filter || '';
 
 
         console.log(filter);
@@ -11,15 +11,16 @@ export const findUser = async (req, res) => {
         const result = await User.query(findUser, [`${filter}%`])
 
         if (result.rows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: `No user name start with ${filter}`
+            return res.status(200).json({
+                success: true,
+                users: []
             })
         }
 
         res.status(200).json({
             success: true,
             users: result.rows.map(user => ({
+                id: user.id,
                 name: user.name,
                 email: user.email
             }))
